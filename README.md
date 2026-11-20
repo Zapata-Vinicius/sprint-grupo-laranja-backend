@@ -101,3 +101,11 @@ Cada Pull Request deve tratar de uma mudança coerente e apresentar:
 - o motivo da alteração;
 - como verificar o resultado;
 - observações relevantes para a revisão.
+
+## Verificação do GTFS
+
+A aplicação consulta o GTFS da SPTrans ao iniciar e novamente a cada hora. O endereço padrão pode ser substituído pela variável `GTFS_URL` no `.env`. A resposta deve ser um ZIP; páginas HTML ou erros não são aceitos como GTFS. O conteúdo é lido em partes e comparado por SHA-256, sem salvar o arquivo.
+
+Consulte `GET /gtfs/verificacao` para ver o horário UTC da última verificação bem-sucedida, o hash, se houve alteração em relação à verificação anterior e eventual erro da última tentativa. A primeira verificação retorna `alterado: null`, pois não existe comparação anterior. Antes do primeiro sucesso, a rota retorna HTTP 503. Uma falha preserva o último resultado e é repetida no próximo ciclo.
+
+Os resultados ficam somente em memória, sem banco de dados: ao reiniciar, a primeira verificação estabelece uma nova referência. Execute uma única instância da aplicação para evitar requisições duplicadas. A checagem ocorre enquanto o backend estiver em execução; o acesso à fonte depende de ela disponibilizar o ZIP diretamente.
